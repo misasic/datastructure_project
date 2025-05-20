@@ -47,7 +47,7 @@
 
 <script>
 export default {
-  name: 'Map',
+  name: 'AMap',
   data() {
     return {
       startPoint: '北京邮电大学',
