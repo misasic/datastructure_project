@@ -1,0 +1,33 @@
+{
+  "name": "buptguider",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "backend": "node backend/server.js",
+    "dev":"vite --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@amap/amap-jsapi-loader": "^2.0.1",  
+    "axios": "^1.8.4",
+    "core-js": "^3.8.3",
+    "vue": "^3.4.21",  
+    "vue-router": "^4.3.0",
+    "path-browserify": "^1.0.1",  
+    "element-plus": "^2.7.4"  
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.8", 
+    "@vue/cli-plugin-eslint": "~5.0.8",
+    "@vue/cli-service": "~5.0.8",
+    "@vue/compiler-sfc": "^3.4.21",
+    "eslint": "^8.56.0",  
+    "eslint-plugin-vue": "^9.23.0",  
+    "sass": "^1.72.0",  
+    "sass-loader": "^13.3.2"
+  }
+}
