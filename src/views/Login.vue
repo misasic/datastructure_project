@@ -129,7 +129,7 @@ export default {
 }
 
 .background-image {
-  background-image: url('D:/HP/Desktop/datastruct/buptguider/buptguider/src/assets/moutains-8445767_1280.jpg');
+  background-image: url('../assets/moutains-8445767_1280.jpg');
   background-size: cover;
   background-position: center;
   position: absolute;
