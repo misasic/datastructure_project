@@ -23,8 +23,8 @@ npm run lint
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
-##backend start 
+## backend start 
 
 node server.js
 
-##这个项目很多库文件都没有下，在自己的电脑启动记得先下库
+## 这个项目很多库文件都没有下，在自己的电脑启动记得先下库
