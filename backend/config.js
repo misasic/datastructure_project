@@ -1,9 +1,10 @@
 module.exports = {
   db: {
-    host: 'localhost',
-    user: 'root',          // 你的MySQL用户名
-    password: '123456',  // 你的MySQL密码
-    database: 'buptguider' // 数据库名
+    host: '192.168.74.129',
+    user: 'buptguider',          // 远程MySQL用户名
+    password: 'B7YWTJLY4SDcDZYb',  // 远程MySQL密码
+    database: 'buptguider',       // 数据库名
+    port: 3306                    // MySQL端口
   },
-  port: 3000
+  serverPort: 3000                // HTTP服务端口
 };

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 import AMap from '../views/Map.vue'
+import Recommendation from '../views/Recommendation.vue'
 
 const routes = [
   {
@@ -12,6 +13,12 @@ const routes = [
     path: '/map',
     name: 'AMap',
     component: AMap,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/recommendation',
+    name: 'Recommendation',
+    component: Recommendation,
     meta: { requiresAuth: true }
   }
 ]

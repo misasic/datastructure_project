@@ -42,6 +42,8 @@
         </ol>
       </div>
     </div>
+    
+    <button @click="goToRecommendation" class="nav-btn">旅游推荐</button>
   </div>
 </template>
 
@@ -207,6 +209,10 @@ export default {
     handleLogout() {
       localStorage.removeItem('user');
       this.$router.push('/');
+    },
+    
+    goToRecommendation() {
+      this.$router.push('/recommendation');
     }
   }
 };
@@ -457,5 +463,47 @@ export default {
   100% {
     opacity: 0.6;
   }
+}
+
+.nav-btn {
+  padding: 12px 28px;
+  background: linear-gradient(45deg, #409eff, #36cfc9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(64, 158, 255, 0.2);
+  margin-top: 20px;
+  margin-left: 20px;
+}
+
+.nav-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(64, 158, 255, 0.3);
+}
+
+.nav-btn:active {
+  transform: translateY(0);
+}
+
+.nav-btn::before {
+  content: "旅游推荐";
+  margin-right: 4px;
+}
+
+.nav-btn::after {
+  content: "→";
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.nav-btn:hover::after {
+  transform: translateX(5px);
 }
 </style>

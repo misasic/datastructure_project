@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('./db');
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
+const recommendation = require('./recommendation');
 
 // 用户登录
 router.post('/login', async (req, res) => {
@@ -88,6 +89,273 @@ router.post('/register', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: '注册失败' 
+    });
+  }
+});
+
+// 旅游推荐相关路由
+
+// 获取景点推荐
+router.get('/scenic-spots', async (req, res) => {
+  try {
+    const { 
+      limit = 10, 
+      sortBy = 'popularity', 
+      category,
+      keyword
+    } = req.query;
+    
+    // 从请求头或会话中获取用户ID
+    const userId = req.headers['user-id'] || null;
+    
+    const options = {
+      userId: userId ? parseInt(userId) : null,
+      limit: parseInt(limit),
+      sortBy,
+      category,
+      keyword
+    };
+    
+    const recommendations = await recommendation.getScenicSpotRecommendations(options);
+    
+    res.json({
+      success: true,
+      data: recommendations
+    });
+  } catch (err) {
+    console.error('获取景点推荐出错:', err);
+    res.status(500).json({
+      success: false,
+      message: '获取景点推荐失败'
+    });
+  }
+});
+
+// 获取学校推荐
+router.get('/schools', async (req, res) => {
+  try {
+    const { 
+      limit = 10, 
+      sortBy = 'popularity', 
+      category,
+      keyword
+    } = req.query;
+    
+    // 从请求头或会话中获取用户ID
+    const userId = req.headers['user-id'] || null;
+    
+    const options = {
+      userId: userId ? parseInt(userId) : null,
+      limit: parseInt(limit),
+      sortBy,
+      category,
+      keyword
+    };
+    
+    const recommendations = await recommendation.getSchoolRecommendations(options);
+    
+    res.json({
+      success: true,
+      data: recommendations
+    });
+  } catch (err) {
+    console.error('获取学校推荐出错:', err);
+    res.status(500).json({
+      success: false,
+      message: '获取学校推荐失败'
+    });
+  }
+});
+
+// 设置用户偏好
+router.post('/user-preference', async (req, res) => {
+  try {
+    const { userId, category, interestLevel } = req.body;
+    
+    if (!userId || !category || interestLevel === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: '缺少必要参数'
+      });
+    }
+    
+    const result = await recommendation.setUserPreference(
+      parseInt(userId),
+      category,
+      parseFloat(interestLevel)
+    );
+    
+    res.json({
+      success: true,
+      message: '用户偏好设置成功'
+    });
+  } catch (err) {
+    console.error('设置用户偏好出错:', err);
+    res.status(500).json({
+      success: false,
+      message: '设置用户偏好失败'
+    });
+  }
+});
+
+// 获取所有景点分类
+router.get('/scenic-spot-categories', async (req, res) => {
+  try {
+    const categories = await db.query(
+      'SELECT DISTINCT category FROM scenic_spots'
+    );
+    
+    res.json({
+      success: true,
+      data: categories.map(item => item.category)
+    });
+  } catch (err) {
+    console.error('获取景点分类出错:', err);
+    res.status(500).json({
+      success: false,
+      message: '获取景点分类失败'
+    });
+  }
+});
+
+// 获取所有学校分类
+router.get('/school-categories', async (req, res) => {
+  try {
+    const categories = await db.query(
+      'SELECT DISTINCT category FROM schools'
+    );
+    
+    res.json({
+      success: true,
+      data: categories.map(item => item.category)
+    });
+  } catch (err) {
+    console.error('获取学校分类出错:', err);
+    res.status(500).json({
+      success: false,
+      message: '获取学校分类失败'
+    });
+  }
+});
+
+// 添加或更新景点
+router.post('/scenic-spot', async (req, res) => {
+  try {
+    const { 
+      id, name, category, description, 
+      location, image_url, popularity, 
+      rating, keywords 
+    } = req.body;
+    
+    if (!name || !category) {
+      return res.status(400).json({
+        success: false,
+        message: '景点名称和分类为必填项'
+      });
+    }
+    
+    if (id) {
+      // 更新景点
+      await db.query(
+        `UPDATE scenic_spots SET 
+         name = ?, category = ?, description = ?,
+         location = ?, image_url = ?, popularity = ?,
+         rating = ?, keywords = ?
+         WHERE id = ?`,
+        [name, category, description, location, 
+         image_url, popularity || 0, rating || 0, 
+         keywords, id]
+      );
+      
+      res.json({
+        success: true,
+        message: '景点更新成功',
+        id
+      });
+    } else {
+      // 新增景点
+      const [result] = await db.query(
+        `INSERT INTO scenic_spots 
+         (name, category, description, location, 
+          image_url, popularity, rating, keywords)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, category, description, location, 
+         image_url, popularity || 0, rating || 0, 
+         keywords]
+      );
+      
+      res.json({
+        success: true,
+        message: '景点添加成功',
+        id: result.insertId
+      });
+    }
+  } catch (err) {
+    console.error('添加/更新景点出错:', err);
+    res.status(500).json({
+      success: false,
+      message: '添加/更新景点失败'
+    });
+  }
+});
+
+// 添加或更新学校
+router.post('/school', async (req, res) => {
+  try {
+    const { 
+      id, name, category, description, 
+      location, image_url, popularity, 
+      rating, keywords 
+    } = req.body;
+    
+    if (!name || !category) {
+      return res.status(400).json({
+        success: false,
+        message: '学校名称和分类为必填项'
+      });
+    }
+    
+    if (id) {
+      // 更新学校
+      await db.query(
+        `UPDATE schools SET 
+         name = ?, category = ?, description = ?,
+         location = ?, image_url = ?, popularity = ?,
+         rating = ?, keywords = ?
+         WHERE id = ?`,
+        [name, category, description, location, 
+         image_url, popularity || 0, rating || 0, 
+         keywords, id]
+      );
+      
+      res.json({
+        success: true,
+        message: '学校更新成功',
+        id
+      });
+    } else {
+      // 新增学校
+      const [result] = await db.query(
+        `INSERT INTO schools 
+         (name, category, description, location, 
+          image_url, popularity, rating, keywords)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [name, category, description, location, 
+         image_url, popularity || 0, rating || 0, 
+         keywords]
+      );
+      
+      res.json({
+        success: true,
+        message: '学校添加成功',
+        id: result.insertId
+      });
+    }
+  } catch (err) {
+    console.error('添加/更新学校出错:', err);
+    res.status(500).json({
+      success: false,
+      message: '添加/更新学校失败'
     });
   }
 });

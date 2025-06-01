@@ -62,7 +62,7 @@ export default {
       
       try {
         const response = await axios.post(
-          'http://10.29.110.212:3000/api/login',
+          '/login',
           this.form
         );
         
@@ -71,7 +71,9 @@ export default {
             id: response.data.user.id,
             username: response.data.user.username
           }));
-          this.$router.push('/map');
+          
+          // 登录成功后询问用户想要前往哪个页面
+          this.$router.push('/recommendation');
         } else {
           this.error = response.data.message || '登录失败，请检查凭证';
         }
@@ -88,7 +90,7 @@ export default {
       
       try {
         const response = await axios.post(
-          'http://10.29.110.212:3000/api/register',
+          '/register',
           this.form
         );
         
