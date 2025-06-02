@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
+const db = require('../db');
 
 // 处理图片请求 - 返回默认占位符图片
 router.get('/:imageName', (req, res) => {
@@ -76,5 +79,143 @@ function getDisplayName(baseName) {
   
   return names[baseName] || '图片';
 }
+
+// 上传图片
+router.post('/upload', async (req, res) => {
+  try {
+    console.log('收到上传请求:', {
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      files: req.files
+    });
+    
+    // 检查是否有文件上传
+    if (!req.files || !req.files.image) {
+      console.log('未找到上传的文件');
+      return res.status(400).json({
+        success: false,
+        message: '请选择要上传的图片'
+      });
+    }
+
+    const file = req.files.image;
+    console.log('上传的文件信息:', {
+      name: file.name,
+      size: file.size,
+      mimetype: file.mimetype,
+      tempFilePath: file.tempFilePath
+    });
+    
+    // 检查文件类型
+    if (!file.mimetype.startsWith('image/')) {
+      console.log('文件类型不正确:', file.mimetype);
+      return res.status(400).json({
+        success: false,
+        message: '只能上传图片文件'
+      });
+    }
+
+    // 检查文件大小（限制为2MB）
+    if (file.size > 2 * 1024 * 1024) {
+      console.log('文件大小超出限制:', file.size);
+      return res.status(400).json({
+        success: false,
+        message: '图片大小不能超过2MB'
+      });
+    }
+
+    // 生成文件名
+    const timestamp = Date.now();
+    const fileName = `${timestamp}_${file.name}`;
+    
+    // 确保上传目录存在
+    const uploadDir = path.join(__dirname, '../../public/uploads');
+    console.log('上传目录:', uploadDir);
+    
+    if (!fs.existsSync(uploadDir)) {
+      console.log('创建上传目录');
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    // 保存文件
+    const filePath = path.join(uploadDir, fileName);
+    console.log('保存文件到:', filePath);
+    
+    await file.mv(filePath);
+    console.log('文件保存成功');
+
+    // 返回文件URL
+    const imageUrl = `/uploads/${fileName}`;
+    console.log('生成的文件URL:', imageUrl);
+    
+    return res.json({
+      success: true,
+      message: '图片上传成功',
+      data: {
+        image_url: imageUrl
+      }
+    });
+  } catch (err) {
+    console.error('上传图片失败:', err);
+    return res.status(500).json({
+      success: false,
+      message: '上传图片失败：' + err.message
+    });
+  }
+});
+
+// 删除图片
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers['user-id'];
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: '请先登录'
+      });
+    }
+
+    // 获取图片信息
+    const [images] = await db.query(
+      'SELECT * FROM diary_images WHERE id = ?',
+      [id]
+    );
+
+    if (!images || images.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: '图片不存在'
+      });
+    }
+
+    const image = images[0];
+
+    // 删除文件
+    const filePath = path.join(__dirname, '../public', image.image_url);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    // 删除数据库记录
+    await db.query(
+      'DELETE FROM diary_images WHERE id = ?',
+      [id]
+    );
+
+    res.json({
+      success: true,
+      message: '图片删除成功'
+    });
+  } catch (err) {
+    console.error('删除图片失败:', err);
+    res.status(500).json({
+      success: false,
+      message: '删除图片失败：' + err.message
+    });
+  }
+});
 
 module.exports = router; 

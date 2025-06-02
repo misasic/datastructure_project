@@ -1,0 +1,9 @@
+-- 创建日记图片表
+CREATE TABLE IF NOT EXISTS diary_images (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  diary_id INT NOT NULL,
+  image_url VARCHAR(255) NOT NULL,
+  aigc_video_url VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (diary_id) REFERENCES diaries(id) ON DELETE CASCADE
+); 

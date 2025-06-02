@@ -78,6 +78,20 @@ async function initDatabase(db) {
     await db.query(createUserPreferencesTable);
     console.log('用户偏好表已创建或已存在');
     
+    // 创建日记表
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS diaries (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        user_id INT NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        date DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    
     console.log('数据库表结构初始化完成!');
     return { success: true };
   } catch (err) {

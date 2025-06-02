@@ -2,11 +2,15 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import axios from 'axios'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
 // 动态设置API地址，支持外网访问
 const hostname = window.location.hostname;
 const apiPort = 3000;
-axios.defaults.baseURL = `http://${hostname}:${apiPort}/api`;
+const protocol = window.location.protocol;
+axios.defaults.baseURL = `${protocol}//${hostname}:${apiPort}/api`;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 axios.defaults.timeout = 10000; // 10秒超时
 axios.defaults.retry = 3; // 最多重试3次
@@ -64,4 +68,11 @@ axios.interceptors.response.use(function (response) {
 const app = createApp(App)
 
 app.use(router)
+app.use(ElementPlus, {
+  locale: zhCn,
+})
+
+// 将axios注入到Vue实例中
+app.config.globalProperties.$axios = axios
+
 app.mount('#app')

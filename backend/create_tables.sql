@@ -1,0 +1,124 @@
+-- 删除现有表（按照正确的顺序）
+DROP TABLE IF EXISTS diary_likes;
+DROP TABLE IF EXISTS diary_images;
+DROP TABLE IF EXISTS diaries;
+DROP TABLE IF EXISTS media;
+DROP TABLE IF EXISTS ratings;
+DROP TABLE IF EXISTS user_preferences;
+DROP TABLE IF EXISTS destinations;
+DROP TABLE IF EXISTS scenic_spots;
+DROP TABLE IF EXISTS schools;
+DROP TABLE IF EXISTS users;
+
+-- 创建用户表
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  showpassword VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 创建日记表
+CREATE TABLE diaries (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  content LONGTEXT NOT NULL,
+  compressed_content LONGBLOB,
+  views INT DEFAULT 0,
+  likes INT DEFAULT 0,
+  date DATETIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 创建日记点赞表
+CREATE TABLE diary_likes (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  diary_id INT NOT NULL,
+  user_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (diary_id) REFERENCES diaries(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_like (diary_id, user_id)
+);
+
+-- 创建日记图片表
+CREATE TABLE diary_images (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  diary_id INT NOT NULL,
+  image_url VARCHAR(255) NOT NULL,
+  animation_url VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (diary_id) REFERENCES diaries(id) ON DELETE CASCADE
+);
+
+-- 创建景点表
+CREATE TABLE scenic_spots (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(100) NOT NULL,
+  description TEXT,
+  location VARCHAR(255),
+  image_url VARCHAR(255),
+  popularity FLOAT DEFAULT 0,
+  rating FLOAT DEFAULT 0,
+  keywords TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 创建学校表
+CREATE TABLE schools (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(100) NOT NULL,
+  description TEXT,
+  location VARCHAR(255),
+  image_url VARCHAR(255),
+  popularity FLOAT DEFAULT 0,
+  rating FLOAT DEFAULT 0,
+  keywords TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 创建目的地表
+CREATE TABLE destinations (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  type ENUM('scenic_spot', 'school') NOT NULL,
+  reference_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 创建媒体表
+CREATE TABLE media (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  diary_id INT NOT NULL,
+  type VARCHAR(50) NOT NULL,
+  url VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (diary_id) REFERENCES diaries(id) ON DELETE CASCADE
+);
+
+-- 创建评分表
+CREATE TABLE ratings (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  destination_id INT NOT NULL,
+  rating FLOAT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (destination_id) REFERENCES destinations(id) ON DELETE CASCADE
+);
+
+-- 创建用户偏好表
+CREATE TABLE user_preferences (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  category VARCHAR(100) NOT NULL,
+  interest_level FLOAT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+); 

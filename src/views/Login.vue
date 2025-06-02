@@ -35,14 +35,14 @@
             注册
           </button>
         </div>
-        <p v-if="error" class="error-message">{{ error }}</p>  
-          </form>
+      </form>
     </div>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+
 export default {
   name: "LoginPage",
   data() {
@@ -51,71 +51,54 @@ export default {
         username: '',
         password: ''
       },
-      loading: false,
-      error: ''
+      loading: false
     };
   },
   methods: {
     async handleLogin() {
-      this.loading = true;
-      this.error = '';
-      
       try {
-        const response = await axios.post(
-          '/login',
-          this.form
-        );
+        this.loading = true;
+        const response = await axios.post('/login', {
+          username: this.form.username,
+          password: this.form.password
+        });
+
+        const data = response.data;
         
-        if (response.data.success) {
-          localStorage.setItem('user', JSON.stringify({
-            id: response.data.user.id,
-            username: response.data.user.username
-          }));
-          
-          // 登录成功后询问用户想要前往哪个页面
-          this.$router.push('/recommendation');
+        if (data.success) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('token', data.token);
+          this.$message.success('登录成功');
+          this.$router.push('/home');
         } else {
-          this.error = response.data.message || '登录失败，请检查凭证';
+          this.$message.error(data.message || '登录失败');
         }
-      } catch (err) {
-        this.error = this.getErrorMessage(err);
+      } catch (error) {
+        console.error('登录错误:', error);
+        this.$message.error(error.response?.data?.message || '登录失败，请稍后重试');
       } finally {
         this.loading = false;
       }
     },
 
     async handleRegister() {
-      this.loading = true;
-      this.error = '';
-      
       try {
-        const response = await axios.post(
-          '/register',
-          this.form
-        );
+        this.loading = true;
+        const response = await axios.post('/register', this.form);
         
-        if (response.data.success) {
-          this.error = '注册成功，请登录';
+        const data = response.data;
+        
+        if (data.success) {
+          this.$message.success('注册成功，请登录');
         } else {
-          this.error = response.data.message || '注册失败';
+          this.$message.error(data.message || '注册失败');
         }
-      } catch (err) {
-        this.error = this.getErrorMessage(err);
+      } catch (error) {
+        console.error('注册错误:', error);
+        this.$message.error(error.response?.data?.message || '注册失败，请稍后重试');
       } finally {
         this.loading = false;
       }
-    },
-
-    getErrorMessage(err) {
-      if (err.response) {
-        switch (err.response.status) {
-          case 400: return '此用户名已存在';
-          case 401: return '用户名或密码错误';
-          case 500: return '';
-          default: return '网络请求失败';
-        }
-      }
-      return '网络连接异常';
     }
   }
 };

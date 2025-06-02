@@ -54,7 +54,9 @@
             
             <select v-model="scenicSortBy" @change="fetchScenicSpots">
               <option value="popularity">按热度排序</option>
-              <option value="rating">按评价排序</option>
+              <option value="rating">按评分排序</option>
+              <option value="name">按名称排序</option>
+              <option value="category">按分类排序</option>
             </select>
           </div>
         </div>
@@ -117,7 +119,9 @@
             
             <select v-model="schoolSortBy" @change="fetchSchools">
               <option value="popularity">按热度排序</option>
-              <option value="rating">按评价排序</option>
+              <option value="rating">按评分排序</option>
+              <option value="name">按名称排序</option>
+              <option value="category">按分类排序</option>
             </select>
           </div>
         </div>
@@ -274,39 +278,36 @@ export default {
         
         console.log('景点请求参数:', params);
         console.log('景点请求头:', headers);
-        console.log('完整请求URL:', axios.defaults.baseURL + '/scenic-spots');
         
-        // 使用axios默认配置的baseURL，它已经在main.js中动态设置
-        // 不再硬编码localhost:3000
         const response = await axios.get('/scenic-spots', { 
           params,
           headers
         });
         
-        console.log('景点响应:', response.data);
-        
         if (response.data.success) {
-          this.scenicSpots = response.data.data;
-          console.log('获取到景点数量:', this.scenicSpots.length);
+          // 对返回的数据进行本地排序
+          let sortedData = [...response.data.data];
+          switch (this.scenicSortBy) {
+            case 'name':
+              sortedData.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+              break;
+            case 'category':
+              sortedData.sort((a, b) => a.category.localeCompare(b.category, 'zh-CN'));
+              break;
+            case 'popularity':
+              sortedData.sort((a, b) => b.popularity - a.popularity);
+              break;
+            case 'rating':
+              sortedData.sort((a, b) => b.rating - a.rating);
+              break;
+          }
+          this.scenicSpots = sortedData;
         } else {
           console.error('获取景点推荐失败:', response.data.message);
-          // 如果服务器响应不成功，显示错误消息
           alert('获取景点推荐失败: ' + response.data.message);
         }
       } catch (err) {
         console.error('获取景点推荐失败:', err);
-        console.error('错误详情:', err.message);
-        if (err.response) {
-          console.error('响应状态:', err.response.status);
-          console.error('响应数据:', err.response.data);
-        } else if (err.request) {
-          // 请求已发送但没有收到响应
-          console.error('未收到响应，请检查服务器是否运行');
-        } else {
-          // 设置请求时发生了错误
-          console.error('请求配置错误:', err.message);
-        }
-        // 在界面上显示错误
         alert('获取景点数据失败，请检查网络连接和服务器状态');
       }
     },
@@ -314,7 +315,6 @@ export default {
     async fetchSchools() {
       try {
         console.log('正在获取学校推荐...');
-        // 构建查询参数
         const params = {
           sortBy: this.schoolSortBy,
           limit: 10
@@ -333,40 +333,35 @@ export default {
           headers['user-id'] = this.user.id;
         }
         
-        console.log('学校请求参数:', params);
-        console.log('学校请求头:', headers);
-        
-        // 使用axios默认配置的baseURL，它已经在main.js中动态设置
-        // 不再硬编码localhost:3000
         const response = await axios.get('/schools', { 
           params,
           headers
         });
         
-        console.log('学校响应:', response.data);
-        
         if (response.data.success) {
-          this.schools = response.data.data;
-          console.log('获取到学校数量:', this.schools.length);
+          // 对返回的数据进行本地排序
+          let sortedData = [...response.data.data];
+          switch (this.schoolSortBy) {
+            case 'name':
+              sortedData.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+              break;
+            case 'category':
+              sortedData.sort((a, b) => a.category.localeCompare(b.category, 'zh-CN'));
+              break;
+            case 'popularity':
+              sortedData.sort((a, b) => b.popularity - a.popularity);
+              break;
+            case 'rating':
+              sortedData.sort((a, b) => b.rating - a.rating);
+              break;
+          }
+          this.schools = sortedData;
         } else {
           console.error('获取学校推荐失败:', response.data.message);
-          // 如果服务器响应不成功，显示错误消息
           alert('获取学校推荐失败: ' + response.data.message);
         }
       } catch (err) {
         console.error('获取学校推荐失败:', err);
-        console.error('错误详情:', err.message);
-        if (err.response) {
-          console.error('响应状态:', err.response.status);
-          console.error('响应数据:', err.response.data);
-        } else if (err.request) {
-          // 请求已发送但没有收到响应
-          console.error('未收到响应，请检查服务器是否运行');
-        } else {
-          // 设置请求时发生了错误
-          console.error('请求配置错误:', err.message);
-        }
-        // 在界面上显示错误
         alert('获取学校数据失败，请检查网络连接和服务器状态');
       }
     },
